@@ -67,7 +67,9 @@ atOptions = {
 </div>
 
 <!-- Social Bar -->
-<script src="https://pl29659533.effectivecpmnetwork.com/66/5a/20/665a203e5d7e2ff6ed7a6d50be88fe86.js"></script>
+<script async="async" data-cfasync="false" src="https://pl29662365.effectivecpmnetwork.com/75c6ed2bbbd3be8170e54a925c105abb/invoke.js"></script>
+<div id="container-75c6ed2bbbd3be8170e54a925c105abb"></div>
+
 
 </body>
 </html>
