@@ -311,7 +311,8 @@
 
     <div id="floating-ad"></div>
     
-<script src="https://speedingdeadlyplays.com/b3/e9/4d/b3e94d023432c8cb40b981d7804166a2.js"></script>
+<script src="https://pl29659533.effectivecpmnetwork.com/66/5a/20/665a203e5d7e2ff6ed7a6d50be88fe86.js"></script>
+
 
 
 
@@ -324,19 +325,19 @@
 
         /* موبایل کوچک */
         if(w<=360){
-            key="3b8048b78e2b0fb0b882483f96fca8a2";
+            key="178c2c0d4b1d26d354d5e45deb460267";
             width=320;
             height=50;
         }
         /* موبایل بزرگ و تبلت */
         else if(w<=768){
-            key="27bf67bdd07dd3734a6fdff8c7879c99";
+            key="96015f0ace861be411b4df77f4509684";
             width=468;
             height=60;
         }
         /* دسکتاپ */
         else {
-            key="30c18b6ace1c2676949453fd6ac33776";
+            key="0060a66942efa379761d703d1b4b8a14";
             width=728;
             height=90;
         }
@@ -384,6 +385,9 @@
         <a href="https://www.flaticon.com/free-icons/telegram" title="telegram icons">Telegram icons created by See Icons - Flaticon</a>
     </div>
 
+<script src="https://pl29669973.effectivecpmnetwork.com/9c/e9/83/9ce9830bc1357a8a72e0682e4af62ce3.js"></script>
+
+  
 </body>
 </html>
 
