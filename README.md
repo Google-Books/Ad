@@ -50,12 +50,12 @@
         .lang-btn {
             background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff;
             padding: 15px; border-radius: var(--border-radius); cursor: pointer; text-align: center;
-            transition: all 0.3s ease; font-size: 1rem;
+            transition: all 0.3s ease; font-size: 1.1rem;
         }
         .lang-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-3px); }
 
         /* ================= MAIN APP LAYOUT ================= */
-        #app-container { display: none; padding-bottom: 80px; min-height: 100vh; flex-direction: column; }
+        #app-container { display: none; padding-bottom: 80px; min-height: 100vh; display: flex; flex-direction: column; }
         header { padding: 20px; text-align: center; border-bottom: 1px solid var(--glass-border); }
         header h2 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
         
@@ -146,14 +146,14 @@
         <h1 class="splash-title">Pro Compressor</h1>
         <p style="color: #ddd; margin-bottom: 20px;">Select Language / انتخاب زبان</p>
         <div class="lang-grid">
-            <div class="lang-btn" onclick="initApp('en')">🇬🇧 English</div>
-            <div class="lang-btn" onclick="initApp('fa')">🇦🇫 دری</div>
-            <div class="lang-btn" onclick="initApp('zh')">🇨🇳 中文</div>
-            <div class="lang-btn" onclick="initApp('ja')">🇯🇵 日本語</div>
-            <div class="lang-btn" onclick="initApp('de')">🇩🇪 Deutsch</div>
-            <div class="lang-btn" onclick="initApp('ru')">🇷🇺 Русский</div>
-            <div class="lang-btn" onclick="initApp('hi')">🇮🇳 हिन्दी</div>
-            <div class="lang-btn" onclick="initApp('ar')">🇸🇦 العربية</div>
+            <div class="lang-btn" onclick="initApp('en')">English</div>
+            <div class="lang-btn" onclick="initApp('fa')">دری</div>
+            <div class="lang-btn" onclick="initApp('zh')">中文</div>
+            <div class="lang-btn" onclick="initApp('ja')">日本語</div>
+            <div class="lang-btn" onclick="initApp('de')">Deutsch</div>
+            <div class="lang-btn" onclick="initApp('ru')">Русский</div>
+            <div class="lang-btn" onclick="initApp('hi')">हिन्दी</div>
+            <div class="lang-btn" onclick="initApp('ar')">العربية</div>
         </div>
         <button style="margin-top: 25px; background: none; border: none; color: #bbb; cursor: pointer; text-decoration: underline;" onclick="initApp('en')">Skip</button>
     </div>
@@ -185,7 +185,7 @@
             <div class="tools-grid">
                 <div class="tool-group">
                     <label id="lbl-filename">File Name</label>
-                    <input type="text" id="config-filename" class="form-control" placeholder="...">
+                    <input type="text" id="config-filename" class="form-control" placeholder="Enter output name...">
                 </div>
 
                 <div class="tool-group">
@@ -194,7 +194,7 @@
                 </div>
 
                 <div class="tool-group">
-                    <label><span id="lbl-quality-text">Target Size / Quality</span> (<span id="slider-val">80</span>%)</label>
+                    <label><span id="lbl-quality">Target Size / Quality</span> (<span id="slider-val">80</span>%)</label>
                     <input type="range" id="config-quality" min="10" max="100" value="80" oninput="document.getElementById('slider-val').innerText = this.value">
                 </div>
             </div>
@@ -229,7 +229,7 @@
 
             <div class="glass-panel settings-item">
                 <h3 id="txt-legal" style="margin-top:0;">Legal</h3>
-                <button id="btn-privacy" class="action-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);" onclick="document.getElementById('privacy-modal').style.display='flex'">Privacy Policy</button>
+                <button id="btn-priv-modal" class="action-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);" onclick="document.getElementById('privacy-modal').style.display='flex'">Privacy Policy</button>
             </div>
         </main>
 
@@ -242,7 +242,7 @@
     <div id="privacy-modal" class="modal-overlay">
         <div class="glass-panel modal-box">
             <span class="close-btn" onclick="document.getElementById('privacy-modal').style.display='none'">&times;</span>
-            <h2 id="modal-privacy-title" style="margin-bottom: 15px; margin-top:0;">Privacy Policy</h2>
+            <h2 id="txt-priv-title" style="margin-bottom: 15px; margin-top:0;">Privacy Policy</h2>
             <div style="font-size: 0.9rem; line-height: 1.6; color: #ddd; text-align: justify;">
                 <p><strong>Pro Compressor Privacy Policy (Abdulrahman)</strong></p>
                 <p><strong>1. Information Collection:</strong> Collects basic usage data and IP address to function properly.</p>
@@ -256,7 +256,7 @@
 
     <div id="processing-screen">
         <div class="progress-header">
-            <h2 id="process-title">Processing...</h2>
+            <h2 id="process-title" data-state="processing">Processing...</h2>
             <p id="process-desc">Please wait while we prepare your file(s).</p>
             <div class="progress-track">
                 <div class="progress-fill" id="progress-bar"></div>
@@ -268,12 +268,10 @@
             </div>
         </div>
 
-        <div class="ad-container" id="ad-container">
-            </div>
+        <div class="ad-container" id="ad-container"></div>
     </div>
 
     <script>
-        // Global State
         let currentType = '';
         let selectedFiles = [];
         let processedDataUrl = null; 
@@ -281,63 +279,81 @@
         let processedFilename = 'output';
         let adInterval = null;
 
-        // Comprehensive Translation Dictionary
+        // Comprehensive Dictionary for ALL texts
         const dict = {
-            en: { home: "🏠 Home", set: "⚙️ Settings", btnSel: "Select File(s)", desc: "Select an Image, Video, or Document. Select multiple files to create a Zip.", fname: "File Name", fmt: "Target Format", qual: "Target Size / Quality", start: "Start Processing", themes: "Visual Themes", legal: "Legal", lang: "Language", back: "← Back", priv: "Privacy Policy", pTitle: "Processing...", pDesc: "Please wait while we prepare your file(s).", pCompTitle: "Complete!", pCompDesc: "Your file is ready to download.", bDown: "Download File", bHome: "Back Home" },
-            fa: { home: "🏠 خانه", set: "⚙️ تنظیمات", btnSel: "انتخاب فایل", desc: "عکس، ویدیو یا سند انتخاب کنید. برای ساخت Zip چند فایل انتخاب کنید.", fname: "نام فایل", fmt: "فرمت خروجی", qual: "کیفیت / حجم هدف", start: "شروع پردازش", themes: "تم‌های ظاهری", legal: "حقوقی", lang: "زبان", back: "← بازگشت", priv: "سیاست حریم خصوصی", pTitle: "در حال پردازش...", pDesc: "لطفاً تا آماده‌سازی فایل صبر کنید.", pCompTitle: "تکمیل شد!", pCompDesc: "فایل شما برای دانلود آماده است.", bDown: "دانلود فایل", bHome: "بازگشت به خانه" },
-            zh: { home: "🏠 首页", set: "⚙️ 设置", btnSel: "选择文件", desc: "选择图像，视频或文档。选择多个文件以创建Zip。", fname: "文件名", fmt: "目标格式", qual: "质量", start: "开始处理", themes: "视觉主题", legal: "合法", lang: "语言", back: "← 返回", priv: "隐私政策", pTitle: "处理中...", pDesc: "请稍等，我们正在准备您的文件。", pCompTitle: "完成！", pCompDesc: "您的文件已准备好下载。", bDown: "下载文件", bHome: "返回首页" },
-            ja: { home: "🏠 ホーム", set: "⚙️ 設定", btnSel: "ファイルを選択", desc: "画像、動画、ドキュメントを選択します。複数選択でZip作成。", fname: "ファイル名", fmt: "フォーマット", qual: "品質/サイズ", start: "処理開始", themes: "テーマ", legal: "法的", lang: "言語", back: "← 戻る", priv: "プライバシーポリシー", pTitle: "処理中...", pDesc: "ファイルの準備中です。お待ちください。", pCompTitle: "完了！", pCompDesc: "ファイルのダウンロード準備ができました。", bDown: "ダウンロード", bHome: "ホームに戻る" },
-            de: { home: "🏠 Start", set: "⚙️ Einst.", btnSel: "Datei wählen", desc: "Bild, Video oder Dokument wählen. Mehrere für Zip.", fname: "Dateiname", fmt: "Format", qual: "Qualität", start: "Starten", themes: "Themen", legal: "Rechtlich", lang: "Sprache", back: "← Zurück", priv: "Datenschutz", pTitle: "Verarbeitung...", pDesc: "Bitte warten Sie...", pCompTitle: "Fertig!", pCompDesc: "Ihre Datei ist bereit.", bDown: "Herunterladen", bHome: "Zurück" },
-            ru: { home: "🏠 Главная", set: "⚙️ Настройки", btnSel: "Выбрать файл", desc: "Выберите изображение, видео или документ. Несколько для Zip.", fname: "Имя файла", fmt: "Формат", qual: "Качество", start: "Начать", themes: "Темы", legal: "Юридическая", lang: "Язык", back: "← Назад", priv: "Политика конфиденциальности", pTitle: "Обработка...", pDesc: "Пожалуйста, подождите...", pCompTitle: "Готово!", pCompDesc: "Ваш файл готов к скачиванию.", bDown: "Скачать", bHome: "На главную" },
-            hi: { home: "🏠 होम", set: "⚙️ सेटिंग्स", btnSel: "फ़ाइल चुनें", desc: "छवि, वीडियो या दस्तावेज़ चुनें। ज़िप के लिए कई चुनें।", fname: "फ़ाइल का नाम", fmt: "प्रारूप", qual: "गुणवत्ता", start: "शुरू करें", themes: "विषय", legal: "कानूनी", lang: "भाषा", back: "← वापस", priv: "गोपनीयता नीति", pTitle: "प्रसंस्करण...", pDesc: "कृपया प्रतीक्षा करें...", pCompTitle: "पूरा हुआ!", pCompDesc: "आपकी फ़ाइल डाउनलोड के लिए तैयार है।", bDown: "डाउनलोड करें", bHome: "वापस होम" },
-            ar: { home: "🏠 الرئيسية", set: "⚙️ الإعدادات", btnSel: "اختر ملف", desc: "اختر صورة، فيديو أو مستند. اختر عدة ملفات لإنشاء Zip.", fname: "اسم الملف", fmt: "الصيغة", qual: "الجودة / الحجم", start: "بدء المعالجة", themes: "السمات", legal: "قانوني", lang: "اللغة", back: "← عودة", priv: "سياسة الخصوصية", pTitle: "جاري المعالجة...", pDesc: "يرجى الانتظار...", pCompTitle: "مكتمل!", pCompDesc: "ملفك جاهز للتحميل.", bDown: "تحميل الملف", bHome: "العودة للرئيسية" }
+            en: { home: "🏠 Home", set: "⚙️ Settings", btnSel: "Select File(s)", desc: "Select an Image, Video, or Document. Select multiple files to create a Zip.", fname: "File Name", fmt: "Target Format", qual: "Target Size / Quality", start: "Start Processing", themes: "Visual Themes", legal: "Legal", lang: "Language", back: "← Back", proc: "Processing...", wait: "Please wait while we prepare your file(s).", comp: "Complete!", ready: "Your file is ready to download.", dl: "Download File", bh: "Back Home", priv: "Privacy Policy", filesSel: "Files Selected", alertVid: "You can only select 1 video at a time.", alertLib: "JSZip library not loaded. Simulating...", note: "Note: Video/Doc requires external packages in production." },
+            fa: { home: "🏠 خانه", set: "⚙️ تنظیمات", btnSel: "انتخاب فایل", desc: "عکس، ویدیو یا سند انتخاب کنید. برای ساخت Zip چند فایل انتخاب کنید.", fname: "نام فایل", fmt: "فرمت خروجی", qual: "کیفیت / حجم هدف", start: "شروع پردازش", themes: "تم‌های ظاهری", legal: "حقوقی", lang: "زبان", back: "← بازگشت", proc: "در حال پردازش...", wait: "لطفاً منتظر بمانید...", comp: "تکمیل شد!", ready: "فایل شما برای دانلود آماده است.", dl: "دانلود فایل", bh: "بازگشت به خانه", priv: "حریم خصوصی", filesSel: "فایل انتخاب شد", alertVid: "شما فقط می‌توانید ۱ ویدیو انتخاب کنید.", alertLib: "کتابخانه JSZip بارگیری نشد. در حال شبیه‌سازی...", note: "توجه: پردازش ویدیو/سند در نسخه واقعی نیاز به پکیج‌های خارجی دارد." },
+            zh: { home: "🏠 首页", set: "⚙️ 设置", btnSel: "选择文件", desc: "选择图像，视频或文档。选择多个文件创建Zip。", fname: "文件名", fmt: "目标格式", qual: "目标大小 / 质量", start: "开始处理", themes: "视觉主题", legal: "合法", lang: "语言", back: "← 返回", proc: "处理中...", wait: "请稍候...", comp: "完成！", ready: "文件已准备好下载。", dl: "下载文件", bh: "返回首页", priv: "隐私政策", filesSel: "个文件已选择", alertVid: "一次只能选择1个视频。", alertLib: "未加载JSZip库，正在模拟...", note: "注意：视频/文档在生产环境中需要外部包。" },
+            ja: { home: "🏠 ホーム", set: "⚙️ 設定", btnSel: "ファイルを選択", desc: "画像、動画、ドキュメントを選択します。複数選択でZip作成。", fname: "ファイル名", fmt: "フォーマット", qual: "品質 / サイズ", start: "処理開始", themes: "テーマ", legal: "法的", lang: "言語", back: "← 戻る", proc: "処理中...", wait: "お待ちください...", comp: "完了！", ready: "ファイルのダウンロード準備ができました。", dl: "ファイルをダウンロード", bh: "ホームに戻る", priv: "プライバシーポリシー", filesSel: "ファイル選択済み", alertVid: "一度に選択できる動画は1つだけです。", alertLib: "JSZipがロードされていません。シミュレーション中...", note: "注：動画/ドキュメントには外部パッケージが必要です。" },
+            de: { home: "🏠 Start", set: "⚙️ Einst.", btnSel: "Datei wählen", desc: "Bild, Video oder Dokument wählen. Mehrere für Zip.", fname: "Dateiname", fmt: "Format", qual: "Qualität", start: "Verarbeitung starten", themes: "Themen", legal: "Rechtlich", lang: "Sprache", back: "← Zurück", proc: "Verarbeitung...", wait: "Bitte warten...", comp: "Abgeschlossen!", ready: "Ihre Datei ist zum Download bereit.", dl: "Datei herunterladen", bh: "Zurück zur Start", priv: "Datenschutz", filesSel: "Dateien ausgewählt", alertVid: "Nur 1 Video auf einmal wählbar.", alertLib: "JSZip nicht geladen. Simuliere...", note: "Hinweis: Video/Dokument erfordert externe Pakete." },
+            ru: { home: "🏠 Главная", set: "⚙️ Настройки", btnSel: "Выбрать файл", desc: "Выберите изображение, видео или документ. Несколько для Zip.", fname: "Имя файла", fmt: "Формат", qual: "Качество", start: "Начать", themes: "Темы", legal: "Юридическая", lang: "Язык", back: "← Назад", proc: "Обработка...", wait: "Пожалуйста, подождите...", comp: "Готово!", ready: "Ваш файл готов к скачиванию.", dl: "Скачать файл", bh: "На главную", priv: "Конфиденциальность", filesSel: "файлов выбрано", alertVid: "Можно выбрать только 1 видео.", alertLib: "JSZip не загружен. Симуляция...", note: "Примечание: Для видео нужны внешние пакеты." },
+            hi: { home: "🏠 होम", set: "⚙️ सेटिंग्स", btnSel: "फ़ाइल चुनें", desc: "छवि, वीडियो या दस्तावेज़ चुनें। ज़िप के लिए कई चुनें।", fname: "फ़ाइल का नाम", fmt: "प्रारूप", qual: "गुणवत्ता", start: "शुरू करें", themes: "विषय", legal: "कानूनी", lang: "भाषा", back: "← वापस", proc: "प्रसंस्करण...", wait: "कृपया प्रतीक्षा करें...", comp: "पूरा हुआ!", ready: "आपकी फ़ाइल डाउनलोड के लिए तैयार है।", dl: "फ़ाइल डाउनलोड करें", bh: "होम पर वापस", priv: "गोपनीयता नीति", filesSel: "फ़ाइलें चयनित", alertVid: "आप एक बार में केवल 1 वीडियो चुन सकते हैं।", alertLib: "JSZip लोड नहीं हुआ। अनुकरण...", note: "नोट: वीडियो के लिए बाहरी पैकेज की आवश्यकता है।" },
+            ar: { home: "🏠 الرئيسية", set: "⚙️ الإعدادات", btnSel: "اختر ملف", desc: "اختر صورة، فيديو أو مستند. لإنشاء Zip اختر عدة ملفات.", fname: "اسم الملف", fmt: "الصيغة", qual: "الجودة / الحجم", start: "بدء المعالجة", themes: "السمات", legal: "قانوني", lang: "اللغة", back: "← رجوع", proc: "جاري المعالجة...", wait: "يرجى الانتظار...", comp: "اكتمل!", ready: "ملفك جاهز للتنزيل.", dl: "تنزيل الملف", bh: "العودة للرئيسية", priv: "سياسة الخصوصية", filesSel: "ملفات محددة", alertVid: "يمكنك تحديد فيديو واحد فقط.", alertLib: "مكتبة JSZip غير محملة. جاري المحاكاة...", note: "ملاحظة: يتطلب الفيديو حزم خارجية." }
         };
 
+        // Helper string translation fetcher
+        function getText(key) {
+            const lang = document.getElementById('lang-selector').value || 'en';
+            return (dict[lang] && dict[lang][key]) ? dict[lang][key] : dict['en'][key];
+        }
+
+        // Safe DOM Text Updater
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el && text) el.innerText = text;
+        }
+
         function initApp(lang) {
-            document.getElementById('splash-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'flex';
-            document.getElementById('lang-selector').value = lang;
-            changeLanguage(lang);
+            try {
+                // Ensure dropdown matches selection
+                document.getElementById('lang-selector').value = lang;
+                changeLanguage(lang);
+            } catch (e) {
+                console.error("Translation Error: ", e);
+            } finally {
+                // Guaranteed to open the app even if translation glitches
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+            }
         }
 
         function changeLanguage(lang) {
-            const t = dict[lang] || dict['en'];
-            
-            // RTL for Farsi and Arabic
             document.body.style.direction = (lang === 'fa' || lang === 'ar') ? 'rtl' : 'ltr';
             
-            // Navigation
-            document.getElementById('nav-home').innerText = t.home;
-            document.getElementById('nav-settings').innerText = t.set;
+            setText('nav-home', getText('home'));
+            setText('nav-settings', getText('set'));
+            setText('txt-select-file', getText('btnSel'));
+            setText('txt-home-desc', getText('desc'));
+            setText('lbl-filename', getText('fname'));
+            setText('lbl-format', getText('fmt'));
+            setText('lbl-quality', getText('qual'));
+            setText('btn-start', getText('start'));
+            setText('txt-themes', getText('themes'));
+            setText('txt-legal', getText('legal'));
+            setText('lbl-set-lang', getText('lang'));
+            setText('btn-back', getText('back'));
+            setText('btn-download', getText('dl'));
+            setText('btn-back-home', getText('bh'));
+            setText('txt-priv-title', getText('priv'));
+            setText('btn-priv-modal', getText('priv'));
             
-            // Home Screen
-            document.getElementById('txt-select-file').innerText = t.btnSel;
-            document.getElementById('txt-home-desc').innerText = t.desc;
-            
-            // Config Screen
-            document.getElementById('btn-back').innerText = t.back;
-            document.getElementById('lbl-filename').innerText = t.fname;
-            document.getElementById('lbl-format').innerText = t.fmt;
-            document.getElementById('lbl-quality-text').innerText = t.qual;
-            document.getElementById('btn-start').innerText = t.start;
-            
-            // Settings Screen
-            document.getElementById('lbl-set-lang').innerText = t.lang;
-            document.getElementById('txt-themes').innerText = t.themes;
-            document.getElementById('txt-legal').innerText = t.legal;
-            document.getElementById('btn-privacy').innerText = t.priv;
-            document.getElementById('modal-privacy-title').innerText = t.priv;
-            
-            // Processing Screen (Update only if currently processing, leave 'Complete' if done)
-            if (document.getElementById('result-actions').style.display === 'none') {
-                document.getElementById('process-title').innerText = t.pTitle;
-                document.getElementById('process-desc').innerText = t.pDesc;
-            } else {
-                document.getElementById('process-title').innerText = t.pCompTitle;
-                document.getElementById('process-desc').innerText = t.pCompDesc;
+            // Re-render file badge if exists
+            const fileBadge = document.querySelector('.file-badge');
+            if(fileBadge && selectedFiles.length > 1) {
+                fileBadge.innerText = `${selectedFiles.length} ${getText('filesSel')}`;
             }
-            document.getElementById('btn-download').innerText = t.bDown;
-            document.getElementById('btn-back-home').innerText = t.bHome;
+
+            // Processing texts based on state
+            const procTitle = document.getElementById('process-title');
+            if (procTitle) {
+                if (procTitle.dataset.state === 'complete') {
+                    setText('process-title', getText('comp'));
+                    setText('process-desc', getText('ready'));
+                } else {
+                    setText('process-title', getText('proc'));
+                    setText('process-desc', getText('wait'));
+                }
+            }
         }
 
         function switchView(viewId, navElement) {
@@ -365,7 +381,6 @@
             const firstFile = selectedFiles[0];
             const mime = firstFile.type;
 
-            // Determine Type & Limits
             if(selectedFiles.length > 1) {
                 if(selectedFiles.every(f => f.type.startsWith('image/')) && selectedFiles.length <= 5) {
                     currentType = 'image-multiple';
@@ -379,7 +394,7 @@
             }
 
             if(currentType === 'video' && selectedFiles.length > 1) {
-                alert("You can only select 1 video at a time.");
+                alert(getText('alertVid'));
                 event.target.value = ''; return;
             }
 
@@ -408,12 +423,11 @@
                 formatSelect.appendChild(el);
             });
 
-            // HD Preview
             const previewArea = document.getElementById('preview-area');
             previewArea.innerHTML = '';
             
             if(selectedFiles.length > 1) {
-                previewArea.innerHTML = `<div class="file-badge">${selectedFiles.length} Files Selected</div>`;
+                previewArea.innerHTML = `<div class="file-badge">${selectedFiles.length} ${getText('filesSel')}</div>`;
             }
 
             if(currentType.startsWith('image')) {
@@ -435,10 +449,9 @@
             document.getElementById('processing-screen').style.display = 'flex';
             document.getElementById('result-actions').style.display = 'none';
             
-            const lang = document.getElementById('lang-selector').value || 'en';
-            const t = dict[lang] || dict['en'];
-            document.getElementById('process-title').innerText = t.pTitle;
-            document.getElementById('process-desc').innerText = t.pDesc;
+            document.getElementById('process-title').dataset.state = 'processing';
+            setText('process-title', getText('proc'));
+            setText('process-desc', getText('wait'));
             
             const bar = document.getElementById('progress-bar');
             bar.style.width = '0%';
@@ -447,7 +460,6 @@
             processedFilename = document.getElementById('config-filename').value + '.' + targetFormat;
             const quality = document.getElementById('config-quality').value / 100;
 
-            // Start Smart Ad Engine
             manageAds();
 
             if(currentType.startsWith('image') && targetFormat === 'webp') {
@@ -459,13 +471,10 @@
             }
         }
 
-        // ================= SMART AD ENGINE =================
         function manageAds() {
             const adContainer = document.getElementById('ad-container');
-            
             function injectAd() {
                 if (navigator.onLine) {
-                    // Inject isolated iframe for Adsterra to prevent document.write breaking the app
                     adContainer.innerHTML = `
                         <iframe srcdoc="
                             <html><body style='margin:0;display:flex;justify-content:center;align-items:center;'>
@@ -476,16 +485,14 @@
                             </body></html>
                         " width="300" height="250" frameborder="0" scrolling="no"></iframe>`;
                 } else {
-                    adContainer.innerHTML = ''; // Hide if offline/VPN blocked
+                    adContainer.innerHTML = '';
                 }
             }
-
-            injectAd(); // First load
+            injectAd();
             if(adInterval) clearInterval(adInterval);
-            adInterval = setInterval(injectAd, 10000); // Reload every 10 seconds
+            adInterval = setInterval(injectAd, 10000);
         }
 
-        // Processing Logic
         function simulateProcessing(bar) {
             let width = 0;
             const int = setInterval(() => {
@@ -514,7 +521,11 @@
         }
 
         function processZip(files, bar) {
-            if(typeof JSZip === 'undefined') { simulateProcessing(bar); return; }
+            if(typeof JSZip === 'undefined') { 
+                console.log(getText('alertLib'));
+                simulateProcessing(bar); 
+                return; 
+            }
             const zip = new JSZip();
             files.forEach(file => zip.file(file.name, file));
             zip.generateAsync({type:"blob"}, function(meta) {
@@ -527,10 +538,9 @@
         }
 
         function finishProcessing() {
-            const lang = document.getElementById('lang-selector').value || 'en';
-            const t = dict[lang] || dict['en'];
-            document.getElementById('process-title').innerText = t.pCompTitle;
-            document.getElementById('process-desc').innerText = t.pCompDesc;
+            document.getElementById('process-title').dataset.state = 'complete';
+            setText('process-title', getText('comp'));
+            setText('process-desc', getText('ready'));
             document.getElementById('result-actions').style.display = 'flex';
         }
 
@@ -539,7 +549,7 @@
             link.download = processedFilename;
             if(currentType.startsWith('image') && processedDataUrl) link.href = processedDataUrl;
             else if(currentType === 'zip' && processedBlob) link.href = URL.createObjectURL(processedBlob);
-            else { alert("Note: Video/Doc requires external packages in production."); return; }
+            else { alert(getText('note')); return; }
             link.click();
         }
 
@@ -549,13 +559,6 @@
             document.getElementById('app-container').style.display = 'flex';
             document.getElementById('main-file-input').value = '';
             processedDataUrl = null; processedBlob = null;
-            
-            // Reset processing text for next time
-            const lang = document.getElementById('lang-selector').value || 'en';
-            const t = dict[lang] || dict['en'];
-            document.getElementById('process-title').innerText = t.pTitle;
-            document.getElementById('process-desc').innerText = t.pDesc;
-
             switchView('home');
         }
     </script>
