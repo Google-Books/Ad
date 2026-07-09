@@ -55,7 +55,7 @@
         .lang-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-3px); }
 
         /* ================= MAIN APP LAYOUT ================= */
-        #app-container { display: none; padding-bottom: 80px; min-height: 100vh; display: flex; flex-direction: column; }
+        #app-container { display: none; padding-bottom: 80px; min-height: 100vh; flex-direction: column; }
         header { padding: 20px; text-align: center; border-bottom: 1px solid var(--glass-border); }
         header h2 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
         
@@ -147,7 +147,7 @@
         <p style="color: #ddd; margin-bottom: 20px;">Select Language / انتخاب زبان</p>
         <div class="lang-grid">
             <div class="lang-btn" onclick="initApp('en')">🇬🇧 English</div>
-            <div class="lang-btn" onclick="initApp('fa')">🇦🇫 دری (Dari)</div>
+            <div class="lang-btn" onclick="initApp('fa')">🇦🇫 دری</div>
             <div class="lang-btn" onclick="initApp('zh')">🇨🇳 中文</div>
             <div class="lang-btn" onclick="initApp('ja')">🇯🇵 日本語</div>
             <div class="lang-btn" onclick="initApp('de')">🇩🇪 Deutsch</div>
@@ -177,7 +177,7 @@
         </main>
 
         <main id="view-config" class="view-section">
-            <button style="background:none; border:none; color:#fff; text-align:left; font-size:1rem; cursor:pointer; margin-bottom:15px;" onclick="switchView('home')">← Back</button>
+            <button id="btn-back" style="background:none; border:none; color:#fff; text-align:left; font-size:1rem; cursor:pointer; margin-bottom:15px;" onclick="switchView('home')">← Back</button>
             
             <div class="preview-container" id="preview-area">
                 </div>
@@ -185,7 +185,7 @@
             <div class="tools-grid">
                 <div class="tool-group">
                     <label id="lbl-filename">File Name</label>
-                    <input type="text" id="config-filename" class="form-control" placeholder="Enter output name...">
+                    <input type="text" id="config-filename" class="form-control" placeholder="...">
                 </div>
 
                 <div class="tool-group">
@@ -194,7 +194,7 @@
                 </div>
 
                 <div class="tool-group">
-                    <label><span id="lbl-quality">Target Size / Quality</span> (<span id="slider-val">80</span>%)</label>
+                    <label><span id="lbl-quality-text">Target Size / Quality</span> (<span id="slider-val">80</span>%)</label>
                     <input type="range" id="config-quality" min="10" max="100" value="80" oninput="document.getElementById('slider-val').innerText = this.value">
                 </div>
             </div>
@@ -207,13 +207,13 @@
                 <label style="display:block; margin-bottom:10px; font-weight:bold;" id="lbl-set-lang">Language</label>
                 <select id="lang-selector" class="form-control" onchange="changeLanguage(this.value)">
                     <option value="en">English</option>
-                    <option value="fa">دری (Dari)</option>
-                    <option value="zh">中文 (Chinese)</option>
-                    <option value="ja">日本語 (Japanese)</option>
-                    <option value="de">Deutsch (German)</option>
-                    <option value="ru">Русский (Russian)</option>
-                    <option value="hi">हिन्दी (Hindi)</option>
-                    <option value="ar">العربية (Arabic)</option>
+                    <option value="fa">دری</option>
+                    <option value="zh">中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="de">Deutsch</option>
+                    <option value="ru">Русский</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ar">العربية</option>
                 </select>
             </div>
 
@@ -229,7 +229,7 @@
 
             <div class="glass-panel settings-item">
                 <h3 id="txt-legal" style="margin-top:0;">Legal</h3>
-                <button class="action-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);" onclick="document.getElementById('privacy-modal').style.display='flex'">Privacy Policy</button>
+                <button id="btn-privacy" class="action-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);" onclick="document.getElementById('privacy-modal').style.display='flex'">Privacy Policy</button>
             </div>
         </main>
 
@@ -242,7 +242,7 @@
     <div id="privacy-modal" class="modal-overlay">
         <div class="glass-panel modal-box">
             <span class="close-btn" onclick="document.getElementById('privacy-modal').style.display='none'">&times;</span>
-            <h2 style="margin-bottom: 15px; margin-top:0;">Privacy Policy</h2>
+            <h2 id="modal-privacy-title" style="margin-bottom: 15px; margin-top:0;">Privacy Policy</h2>
             <div style="font-size: 0.9rem; line-height: 1.6; color: #ddd; text-align: justify;">
                 <p><strong>Pro Compressor Privacy Policy (Abdulrahman)</strong></p>
                 <p><strong>1. Information Collection:</strong> Collects basic usage data and IP address to function properly.</p>
@@ -264,7 +264,7 @@
             
             <div id="result-actions" style="display:none; margin-top:20px; gap:10px; justify-content:center;">
                 <button class="action-btn" id="btn-download" onclick="downloadResult()">Download File</button>
-                <button class="action-btn" style="background: rgba(255,255,255,0.2);" onclick="closeProcessing()">Back Home</button>
+                <button class="action-btn" id="btn-back-home" style="background: rgba(255,255,255,0.2);" onclick="closeProcessing()">Back Home</button>
             </div>
         </div>
 
@@ -281,15 +281,16 @@
         let processedFilename = 'output';
         let adInterval = null;
 
+        // Comprehensive Translation Dictionary
         const dict = {
-            en: { home: "🏠 Home", set: "⚙️ Settings", btnSel: "Select File(s)", desc: "Select an Image, Video, or Document. Select multiple files to create a Zip.", fname: "File Name", fmt: "Target Format", qual: "Target Size / Quality", start: "Start Processing", themes: "Visual Themes", legal: "Legal", lang: "Language" },
-            fa: { home: "🏠 خانه", set: "⚙️ تنظیمات", btnSel: "انتخاب فایل", desc: "عکس، ویدیو یا سند انتخاب کنید. برای ساخت Zip چند فایل انتخاب کنید.", fname: "نام فایل", fmt: "فرمت خروجی", qual: "کیفیت / حجم هدف", start: "شروع پردازش", themes: "تم‌های ظاهری", legal: "حقوقی", lang: "زبان" },
-            zh: { home: "🏠 首页", set: "⚙️ 设置", btnSel: "选择文件", desc: "选择图像，视频或文档。选择多个文件以创建Zip。", fname: "文件名", fmt: "目标格式", qual: "质量", start: "开始处理", themes: "视觉主题", legal: "合法", lang: "语言" },
-            ja: { home: "🏠 ホーム", set: "⚙️ 設定", btnSel: "ファイルを選択", desc: "画像、動画、ドキュメントを選択します。複数選択でZip作成。", fname: "ファイル名", fmt: "フォーマット", qual: "品質/サイズ", start: "処理開始", themes: "テーマ", legal: "法的", lang: "言語" },
-            de: { home: "🏠 Start", set: "⚙️ Einst.", btnSel: "Datei wählen", desc: "Bild, Video oder Dokument wählen. Mehrere für Zip.", fname: "Dateiname", fmt: "Format", qual: "Qualität", start: "Verarbeitung starten", themes: "Themen", legal: "Rechtlich", lang: "Sprache" },
-            ru: { home: "🏠 Главная", set: "⚙️ Настройки", btnSel: "Выбрать файл", desc: "Выберите изображение, видео или документ. Несколько для Zip.", fname: "Имя файла", fmt: "Формат", qual: "Качество", start: "Начать", themes: "Темы", legal: "Юридическая", lang: "Язык" },
-            hi: { home: "🏠 होम", set: "⚙️ सेटिंग्स", btnSel: "फ़ाइल चुनें", desc: "छवि, वीडियो या दस्तावेज़ चुनें। ज़िप के लिए कई चुनें।", fname: "फ़ाइल का नाम", fmt: "प्रारूप", qual: "गुणवत्ता", start: "शुरू करें", themes: "विषय", legal: "कानूनी", lang: "भाषा" },
-            ar: { home: "🏠 الرئيسية", set: "⚙️ الإعدادات", btnSel: "اختر ملف", desc: "اختر صورة، فيديو أو مستند. اختر عدة ملفات لإنشاء Zip.", fname: "اسم الملف", fmt: "الصيغة", qual: "الجودة / الحجم", start: "بدء المعالجة", themes: "السمات", legal: "قانوني", lang: "اللغة" }
+            en: { home: "🏠 Home", set: "⚙️ Settings", btnSel: "Select File(s)", desc: "Select an Image, Video, or Document. Select multiple files to create a Zip.", fname: "File Name", fmt: "Target Format", qual: "Target Size / Quality", start: "Start Processing", themes: "Visual Themes", legal: "Legal", lang: "Language", back: "← Back", priv: "Privacy Policy", pTitle: "Processing...", pDesc: "Please wait while we prepare your file(s).", pCompTitle: "Complete!", pCompDesc: "Your file is ready to download.", bDown: "Download File", bHome: "Back Home" },
+            fa: { home: "🏠 خانه", set: "⚙️ تنظیمات", btnSel: "انتخاب فایل", desc: "عکس، ویدیو یا سند انتخاب کنید. برای ساخت Zip چند فایل انتخاب کنید.", fname: "نام فایل", fmt: "فرمت خروجی", qual: "کیفیت / حجم هدف", start: "شروع پردازش", themes: "تم‌های ظاهری", legal: "حقوقی", lang: "زبان", back: "← بازگشت", priv: "سیاست حریم خصوصی", pTitle: "در حال پردازش...", pDesc: "لطفاً تا آماده‌سازی فایل صبر کنید.", pCompTitle: "تکمیل شد!", pCompDesc: "فایل شما برای دانلود آماده است.", bDown: "دانلود فایل", bHome: "بازگشت به خانه" },
+            zh: { home: "🏠 首页", set: "⚙️ 设置", btnSel: "选择文件", desc: "选择图像，视频或文档。选择多个文件以创建Zip。", fname: "文件名", fmt: "目标格式", qual: "质量", start: "开始处理", themes: "视觉主题", legal: "合法", lang: "语言", back: "← 返回", priv: "隐私政策", pTitle: "处理中...", pDesc: "请稍等，我们正在准备您的文件。", pCompTitle: "完成！", pCompDesc: "您的文件已准备好下载。", bDown: "下载文件", bHome: "返回首页" },
+            ja: { home: "🏠 ホーム", set: "⚙️ 設定", btnSel: "ファイルを選択", desc: "画像、動画、ドキュメントを選択します。複数選択でZip作成。", fname: "ファイル名", fmt: "フォーマット", qual: "品質/サイズ", start: "処理開始", themes: "テーマ", legal: "法的", lang: "言語", back: "← 戻る", priv: "プライバシーポリシー", pTitle: "処理中...", pDesc: "ファイルの準備中です。お待ちください。", pCompTitle: "完了！", pCompDesc: "ファイルのダウンロード準備ができました。", bDown: "ダウンロード", bHome: "ホームに戻る" },
+            de: { home: "🏠 Start", set: "⚙️ Einst.", btnSel: "Datei wählen", desc: "Bild, Video oder Dokument wählen. Mehrere für Zip.", fname: "Dateiname", fmt: "Format", qual: "Qualität", start: "Starten", themes: "Themen", legal: "Rechtlich", lang: "Sprache", back: "← Zurück", priv: "Datenschutz", pTitle: "Verarbeitung...", pDesc: "Bitte warten Sie...", pCompTitle: "Fertig!", pCompDesc: "Ihre Datei ist bereit.", bDown: "Herunterladen", bHome: "Zurück" },
+            ru: { home: "🏠 Главная", set: "⚙️ Настройки", btnSel: "Выбрать файл", desc: "Выберите изображение, видео или документ. Несколько для Zip.", fname: "Имя файла", fmt: "Формат", qual: "Качество", start: "Начать", themes: "Темы", legal: "Юридическая", lang: "Язык", back: "← Назад", priv: "Политика конфиденциальности", pTitle: "Обработка...", pDesc: "Пожалуйста, подождите...", pCompTitle: "Готово!", pCompDesc: "Ваш файл готов к скачиванию.", bDown: "Скачать", bHome: "На главную" },
+            hi: { home: "🏠 होम", set: "⚙️ सेटिंग्स", btnSel: "फ़ाइल चुनें", desc: "छवि, वीडियो या दस्तावेज़ चुनें। ज़िप के लिए कई चुनें।", fname: "फ़ाइल का नाम", fmt: "प्रारूप", qual: "गुणवत्ता", start: "शुरू करें", themes: "विषय", legal: "कानूनी", lang: "भाषा", back: "← वापस", priv: "गोपनीयता नीति", pTitle: "प्रसंस्करण...", pDesc: "कृपया प्रतीक्षा करें...", pCompTitle: "पूरा हुआ!", pCompDesc: "आपकी फ़ाइल डाउनलोड के लिए तैयार है।", bDown: "डाउनलोड करें", bHome: "वापस होम" },
+            ar: { home: "🏠 الرئيسية", set: "⚙️ الإعدادات", btnSel: "اختر ملف", desc: "اختر صورة، فيديو أو مستند. اختر عدة ملفات لإنشاء Zip.", fname: "اسم الملف", fmt: "الصيغة", qual: "الجودة / الحجم", start: "بدء المعالجة", themes: "السمات", legal: "قانوني", lang: "اللغة", back: "← عودة", priv: "سياسة الخصوصية", pTitle: "جاري المعالجة...", pDesc: "يرجى الانتظار...", pCompTitle: "مكتمل!", pCompDesc: "ملفك جاهز للتحميل.", bDown: "تحميل الملف", bHome: "العودة للرئيسية" }
         };
 
         function initApp(lang) {
@@ -301,18 +302,42 @@
 
         function changeLanguage(lang) {
             const t = dict[lang] || dict['en'];
+            
+            // RTL for Farsi and Arabic
             document.body.style.direction = (lang === 'fa' || lang === 'ar') ? 'rtl' : 'ltr';
+            
+            // Navigation
             document.getElementById('nav-home').innerText = t.home;
             document.getElementById('nav-settings').innerText = t.set;
+            
+            // Home Screen
             document.getElementById('txt-select-file').innerText = t.btnSel;
             document.getElementById('txt-home-desc').innerText = t.desc;
+            
+            // Config Screen
+            document.getElementById('btn-back').innerText = t.back;
             document.getElementById('lbl-filename').innerText = t.fname;
             document.getElementById('lbl-format').innerText = t.fmt;
-            document.getElementById('lbl-quality').innerText = t.qual;
+            document.getElementById('lbl-quality-text').innerText = t.qual;
             document.getElementById('btn-start').innerText = t.start;
+            
+            // Settings Screen
+            document.getElementById('lbl-set-lang').innerText = t.lang;
             document.getElementById('txt-themes').innerText = t.themes;
             document.getElementById('txt-legal').innerText = t.legal;
-            document.getElementById('lbl-set-lang').innerText = t.lang;
+            document.getElementById('btn-privacy').innerText = t.priv;
+            document.getElementById('modal-privacy-title').innerText = t.priv;
+            
+            // Processing Screen (Update only if currently processing, leave 'Complete' if done)
+            if (document.getElementById('result-actions').style.display === 'none') {
+                document.getElementById('process-title').innerText = t.pTitle;
+                document.getElementById('process-desc').innerText = t.pDesc;
+            } else {
+                document.getElementById('process-title').innerText = t.pCompTitle;
+                document.getElementById('process-desc').innerText = t.pCompDesc;
+            }
+            document.getElementById('btn-download').innerText = t.bDown;
+            document.getElementById('btn-back-home').innerText = t.bHome;
         }
 
         function switchView(viewId, navElement) {
@@ -409,7 +434,11 @@
             document.getElementById('app-container').style.display = 'none';
             document.getElementById('processing-screen').style.display = 'flex';
             document.getElementById('result-actions').style.display = 'none';
-            document.getElementById('process-title').innerText = "Processing...";
+            
+            const lang = document.getElementById('lang-selector').value || 'en';
+            const t = dict[lang] || dict['en'];
+            document.getElementById('process-title').innerText = t.pTitle;
+            document.getElementById('process-desc').innerText = t.pDesc;
             
             const bar = document.getElementById('progress-bar');
             bar.style.width = '0%';
@@ -498,8 +527,10 @@
         }
 
         function finishProcessing() {
-            document.getElementById('process-title').innerText = "Complete!";
-            document.getElementById('process-desc').innerText = "Your file is ready to download.";
+            const lang = document.getElementById('lang-selector').value || 'en';
+            const t = dict[lang] || dict['en'];
+            document.getElementById('process-title').innerText = t.pCompTitle;
+            document.getElementById('process-desc').innerText = t.pCompDesc;
             document.getElementById('result-actions').style.display = 'flex';
         }
 
@@ -508,7 +539,7 @@
             link.download = processedFilename;
             if(currentType.startsWith('image') && processedDataUrl) link.href = processedDataUrl;
             else if(currentType === 'zip' && processedBlob) link.href = URL.createObjectURL(processedBlob);
-            else { alert("Note: Video/Doc requires external Flutter packages in production."); return; }
+            else { alert("Note: Video/Doc requires external packages in production."); return; }
             link.click();
         }
 
@@ -518,6 +549,13 @@
             document.getElementById('app-container').style.display = 'flex';
             document.getElementById('main-file-input').value = '';
             processedDataUrl = null; processedBlob = null;
+            
+            // Reset processing text for next time
+            const lang = document.getElementById('lang-selector').value || 'en';
+            const t = dict[lang] || dict['en'];
+            document.getElementById('process-title').innerText = t.pTitle;
+            document.getElementById('process-desc').innerText = t.pDesc;
+
             switchView('home');
         }
     </script>
